@@ -13,10 +13,10 @@ def get_matches(type, count) -> list:
     # Takes match type(string) and count(int) as arguments
     return requests.get(f"{BASE_URL}match/v5/matches/by-puuid/{my_id}/ids?type={type}&start=0&count={count}", headers=HEADERS).json()
 
-last_75 = get_matches("ranked", 75)
+last_75_matches = get_matches("ranked", 75)
 match_data_list = [] # List containing full match data for each match in determined match type and count for player
 
-for match in last_75:
+for match in last_75_matches:
     # Iterates over each match in last_75_matches and fetches the match data
     # appends the match data to match_data_list in json format
     # checks for valid response and handles errors
@@ -33,4 +33,7 @@ for match in last_75:
         print(f"Error fetching match data for match ID {match}: {e}")
 
 
-print(match_data_list)
+# Create DataFrame and export to CSV
+df = pd.json_normalize(match_data_list) 
+df.to_csv("matches.csv", index=False)
+df.to_sql("matches", con=sqlite3.connect("lol_match_data.db"), if_exists="replace", index=False)
